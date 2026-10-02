@@ -1,0 +1,36 @@
+generated: '2026-10-02'
+method: searched
+generator: extract-docs-artifacts.py (local)
+source: https://temlavo.com/pricing
+sources:
+- https://temlavo.com/pricing
+name: Temlavo pricing
+audience: developer-api
+pricing_basis: per-seat
+plans:
+- name: Trial
+  price_text: $0
+  price: 0
+  description: 30 days · one-time · no card
+  limits:
+  - name: processed_pages
+    limit_text: 100 processed pages
+- name: Starter
+  price_text: $49 per month
+  price: 49
+  description: 500 pages included
+  limits:
+  - name: included_pages
+    limit_text: 500 pages
+  - name: extra_page_rate
+    limit_text: $0.10 per additional page
+- name: Pro
+  price_text: $149 per month
+  price: 149
+  description: 3,000 pages included
+  limits:
+  - name: included_pages
+    limit_text: 3,000 pages
+  - name: extra_page_rate
+    limit_text: $0.05 per additional page
+docs: https://temlavo.com/pricing

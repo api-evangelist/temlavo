@@ -1,0 +1,57 @@
+# Temlavo — Invoice Extraction API
+
+> Temlavo turns invoice PDFs and images into versioned accounting JSON using AI extraction, practical consistency checks, duplicate signals, and explicit review outcomes.
+
+Built for developers, automation consultants, and agencies creating invoice-processing workflows for small and medium-sized businesses. Integrate through the server-side TypeScript SDK and CLI, HTTP API, or n8n. The initial commercial focus is US/English invoices.
+
+Temlavo provides invoice extraction and structured-data checks. It is not a complete bookkeeping application or payment-approval system. Customers retain control of downstream accounting, review, and payment decisions.
+
+Processing is asynchronous: create a document, upload its source, confirm the upload, and poll the authenticated document resource for a terminal outcome:
+
+- `completed`: no blocking declared check under the document's policy; warnings may remain.
+- `needs_review`: usable structured data with blocking findings that require attention.
+- `failed`: processing did not produce a usable result.
+
+Checks assess extracted structured data. A `completed` outcome does not independently verify source accuracy, establish tax compliance, or authorize payment.
+
+Required fields, line-item acceptance, and duplicate detection share one per-document review policy across integrations. Policy changes acceptance behavior, not extraction effort or accuracy.
+
+API keys are server-side secrets. Never embed them in browser code. Use the returned signed upload method, URL, and all returned headers exactly. Never forward Temlavo API credentials to the upload origin, and do not automatically follow upload redirects.
+
+## Evaluate Temlavo
+
+- [Temlavo](https://temlavo.com): Invoice extraction API for developers and automation workflows.
+- [Product introduction](https://temlavo.com/docs/introduction): Product capabilities, intended use, and integration overview.
+- [Pricing](https://temlavo.com/pricing): Current plans, allowances, and pricing.
+- [Public invoice playground](https://temlavo.com/playground): Explore precomputed sample invoices, extracted fields, line items, checks, and API responses without an account. Processing your own invoices requires sign-in.
+- [Itemized invoice example](https://temlavo.com/docs/itemized-example): Explore an example with line items and review findings.
+- [Security and privacy](https://temlavo.com/security): Data handling, retention, and security information.
+
+## Get started
+
+- [Quickstart](https://temlavo.com/docs): Start integrating with Temlavo.
+- [TypeScript SDK on npm](https://www.npmjs.com/package/@temlavo/sdk): Install `@temlavo/sdk@1` for server-side Node.js applications and CLI use.
+- [SDK and CLI guide](https://temlavo.com/docs/sdk-cli): SDK methods, command-line usage, and integration examples.
+- [Results and review outcomes](https://temlavo.com/docs/sdk-cli#terminal-results): Interpret terminal document states.
+- [Raw HTTP guide](https://temlavo.com/docs/raw-http): Integrate directly with the HTTP API.
+- [n8n setup guide](https://temlavo.com/docs/n8n): Configure and publish the invoice-processing workflow in your n8n instance.
+- [Published n8n template](https://n8n.io/workflows/19943-extract-and-review-invoice-data-with-temlavo-in-a-sub-workflow/): Import Temlavo's reusable invoice-processing sub-workflow.
+
+## API reference
+
+- [API introduction](https://temlavo.com/docs/api): HTTP API integration concepts.
+- [API reference overview](https://temlavo.com/docs/api-reference): Available operations and their contracts.
+- [Create document](https://temlavo.com/docs/api-reference/create-document): Create a submission or recover an existing submission.
+- [Confirm upload](https://temlavo.com/docs/api-reference/confirm-upload): Confirm the uploaded source and admit processing.
+- [Retrieve document](https://temlavo.com/docs/api-reference/retrieve-document): Read processing status and available results.
+- [Delete document](https://temlavo.com/docs/api-reference/delete-document): Request document deletion.
+- [Retrieve usage](https://temlavo.com/docs/api-reference/retrieve-usage): Read usage for the current billing period.
+- [OpenAPI specification](https://temlavo.com/openapi.json): Machine-readable API contract.
+
+## Results, policies, and recovery
+
+- [Review policy](https://temlavo.com/docs/review-policy): Required fields, line-item acceptance, duplicate detection, and review rules.
+- [Invoice schema guide](https://temlavo.com/docs/schema): Understand the versioned accounting JSON structure.
+- [Errors and recovery](https://temlavo.com/docs/errors-recovery): Handle API errors, interrupted uploads, retries, and expiry.
+- [Standalone invoice JSON schema](https://temlavo.com/schemas/invoice.v1.json): Machine-readable `invoice.v1` schema.
+- [Synthetic fixture manifest](https://temlavo.com/fixtures/v1/manifest.json): Available synthetic invoice fixtures and their identities.
