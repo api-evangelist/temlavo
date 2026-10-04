@@ -23,6 +23,11 @@ modified: '2026-10-02'
 
 tags:
 - Company
+- Invoices
+- Extraction
+- Accounting
+tags_raw:
+- Company
 - Invoice
 - Extraction
 - API
