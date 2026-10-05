@@ -19,7 +19,7 @@ specificationVersion: '0.20'
 
 created: '2026-10-02'
 
-modified: '2026-10-02'
+modified: '2026-10-05'
 
 tags:
 - Company
@@ -79,8 +79,48 @@ common:
 - type: Login
   url: https://temlavo.com/sign-in
 
-apis: []
-
+apis:
+- aid: temlavo:temlavo-documents-api
+  name: Temlavo Documents API
+  description: Invoice document operations of the Temlavo Invoice Extraction API (OpenAPI 3.1, version 1.0.0) —
+    create an invoice document and receive an upload authorization, confirm a direct upload so it is admitted
+    for processing, retrieve the document resource with its extracted data, consistency checks and duplicate
+    signals, and delete a document with its retained customer content. Bearer API key authentication.
+  humanURL: https://temlavo.com/docs
+  baseURL: https://api.temlavo.com
+  tags:
+  - Documents
+  properties:
+  - type: OpenAPI
+    url: openapi/temlavo-documents-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, docs host)
+    url: https://temlavo.com/openapi.json
+  - type: Documentation
+    url: https://temlavo.com/docs
+  - type: APIReference
+    url: https://temlavo.com/docs/api-reference
+  - type: JSONSchema
+    name: Invoice JSON Schema (invoice.v1)
+    url: https://temlavo.com/schemas/invoice.v1.json
+- aid: temlavo:temlavo-usage-api
+  name: Temlavo Usage API
+  description: Usage operation of the Temlavo Invoice Extraction API — retrieve current or historical processing
+    usage for the account. Bearer API key authentication.
+  humanURL: https://temlavo.com/docs
+  baseURL: https://api.temlavo.com
+  tags:
+  - Usage
+  properties:
+  - type: OpenAPI
+    url: openapi/temlavo-usage-api-openapi.yml
+  - type: OpenAPI
+    name: OpenAPI (provider-hosted, docs host)
+    url: https://temlavo.com/openapi.json
+  - type: Documentation
+    url: https://temlavo.com/docs
+  - type: APIReference
+    url: https://temlavo.com/docs/api-reference
 x-submission-notes: Invoice extraction API turning invoice PDFs/images into accounting data.
 
 x-submission-probe: root 200; docs 200; OpenAPI 3.1.0 4 paths server api.temlavo.com; llms.txt 200; 404
@@ -89,16 +129,38 @@ x-submission-probe: root 200; docs 200; OpenAPI 3.1.0 4 paths server api.temlavo
 x-submitted-by: marketing@temlavo.com (apis.io/add, 2026-10-02)
 
 x-coverage:
-  state: unreadable
-  reason: no-machine-readable-spec
-  detail: No OpenAPI or other machine-readable contract found at the API host.
+  state: covered
+  reason: contract-on-docs-host
+  detail: >-
+    The OpenAPI 3.1.0 contract (4 paths, 5 operations) is published on the docs host at https://temlavo.com/openapi.json
+    and declares the runtime server https://api.temlavo.com. The earlier unreadable state came from looking for the
+    contract on the API runtime host; corrected at the provider's request (api-evangelist/temlavo#1).
   evidence:
-    - url: https://api.temlavo.com/openapi.json
+    - url: https://temlavo.com/openapi.json
       status: 200
-  checked: '2026-10-02'
+    - url: https://temlavo.com/schemas/invoice.v1.json
+      status: 200
+  checked: '2026-10-05'
 x-enrichment:
   date: '2026-10-02'
   status: enriched
   artifacts_added: 9
   pass: modular-v1
   engine: identity=local,contract=local,surfaces=local,docs=local,regulatory=local
+x-correction-request:
+  requested: '2026-10-05'
+  source:
+  - https://github.com/api-evangelist/temlavo/issues/1
+  request: 'Issue #1 (stefanoskalt), verified live 2026-10-05. https://temlavo.com/openapi.json returns 200 application/json:
+    OpenAPI 3.1.0, "Temlavo Invoice Extraction API" version 1.0.0, server https://api.temlavo.com, 4 paths and 5
+    operations (createDocument, completeDocumentUpload, getDocument, deleteDocument, getUsage), bearer API key
+    security, no tags. https://temlavo.com/docs, https://temlavo.com/docs/api-reference, https://temlavo.com/schemas/invoice.v1.json
+    and https://temlavo.com/llms.txt all return 200; an invented /docs path returns a real 404. https://api.temlavo.com/
+    returns 200 with an empty body (it also answers 200 on an invented path, so the runtime host is not a document
+    source). Associate the docs-host OpenAPI with the Temlavo API entry.'
+  applied: '2026-10-05'
+  applied_note: Saved https://temlavo.com/openapi.json verbatim as openapi/_original/temlavo-openapi.json and split it
+    (operations untagged, so grouped by path) into openapi/temlavo-documents-api-openapi.yml (4 operations) and openapi/temlavo-usage-api-openapi.yml
+    (1 operation), registered as two API entries with baseURL https://api.temlavo.com and the provider-hosted OpenAPI,
+    docs, API reference and invoice JSON Schema as properties. x-coverage moved from unreadable to covered. Scoring
+    reruns on the next scheduled pass.

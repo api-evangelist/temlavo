@@ -1,0 +1,355 @@
+openapi: 3.2.0
+info:
+  title: Temlavo Invoice Extraction Usage API
+  version: 1.0.0
+  description: AI-extracted invoice data with practical consistency checks, duplicate signals, and predictable asynchronous integration.
+servers:
+- url: https://api.temlavo.com
+tags:
+- name: Usage
+paths:
+  /v1/usage:
+    get:
+      operationId: getUsage
+      summary: Retrieve current or historical processing usage
+      security:
+      - ApiKeyAuth: []
+      parameters:
+      - in: query
+        name: accounting_entity_id
+        schema:
+          $ref: '#/components/schemas/AccountingEntityId'
+        required: false
+        description: Optional accounting entity to attribute finalized processed pages for; account totals are unchanged
+      - in: query
+        name: periods_ago
+        schema:
+          $ref: '#/components/schemas/PeriodsAgo'
+        required: false
+        description: Optional closed historical billing period to report, counted backwards from the current entitlement period (1 = most recently closed retained period)
+      responses:
+        '200':
+          description: Usage
+          headers:
+            X-Request-Id:
+              required: true
+              description: Request identifier for support and diagnostics
+              schema:
+                description: Request identifier for support and diagnostics
+                $ref: '#/components/schemas/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageResponse'
+        '400':
+          description: Invalid usage query
+          headers:
+            X-Request-Id:
+              required: true
+              description: Request identifier for support and diagnostics
+              schema:
+                description: Request identifier for support and diagnostics
+                $ref: '#/components/schemas/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Invalid API key
+          headers:
+            X-Request-Id:
+              required: true
+              description: Request identifier for support and diagnostics
+              schema:
+                description: Request identifier for support and diagnostics
+                $ref: '#/components/schemas/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Requested historical usage period not found
+          headers:
+            X-Request-Id:
+              required: true
+              description: Request identifier for support and diagnostics
+              schema:
+                description: Request identifier for support and diagnostics
+                $ref: '#/components/schemas/RequestId'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-Request-Id:
+              required: true
+              description: Request identifier for support and diagnostics
+              schema:
+                description: Request identifier for support and diagnostics
+                $ref: '#/components/schemas/RequestId'
+            Retry-After:
+              required: true
+              description: Seconds to wait before retrying or polling
+              schema:
+                type: string
+                description: Seconds to wait before retrying or polling
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      tags:
+      - Usage
+components:
+  schemas:
+    __schema0:
+      anyOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/__schema0'
+      - type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          $ref: '#/components/schemas/__schema0'
+    PeriodsAgo:
+      type: string
+      pattern: ^[1-9][0-9]{0,8}$
+      minimum: 1
+      maximum: 999999999
+    UsageAttribution:
+      type: object
+      properties:
+        accounting_entity_id:
+          $ref: '#/components/schemas/AccountingEntityId'
+        processed_pages:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+      required:
+      - accounting_entity_id
+      - processed_pages
+      additionalProperties: false
+    RequestId:
+      type: string
+      pattern: ^req_.+$
+    AccountingEntityId:
+      type: string
+      description: Opaque case-sensitive accounting entity namespace with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
+      minLength: 1
+      maxLength: 255
+    UtcDateTime:
+      type: string
+      format: date-time
+      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+    ApiErrorBody:
+      type: object
+      properties:
+        type:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+        retryable:
+          type: boolean
+        details:
+          $ref: '#/components/schemas/JsonValue'
+      required:
+      - type
+      - code
+      - message
+      - request_id
+      - retryable
+      additionalProperties: true
+    JsonValue:
+      $ref: '#/components/schemas/__schema0'
+    ApiError:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorBody'
+      required:
+      - error
+      additionalProperties: true
+    UsageResponse:
+      anyOf:
+      - type: object
+        properties:
+          period:
+            type: object
+            properties:
+              type:
+                type: string
+                const: trial
+              start:
+                $ref: '#/components/schemas/UtcDateTime'
+              end:
+                $ref: '#/components/schemas/UtcDateTime'
+            required:
+            - type
+            - start
+            - end
+            additionalProperties: false
+          plan:
+            type: string
+            const: trial
+          included_pages:
+            type: number
+            const: 100
+          used_pages:
+            type: integer
+            minimum: 0
+            maximum: 100
+          remaining_pages:
+            type: integer
+            minimum: 0
+            maximum: 100
+          overage_pages:
+            type: number
+            const: 0
+          attribution:
+            $ref: '#/components/schemas/UsageAttribution'
+        required:
+        - period
+        - plan
+        - included_pages
+        - used_pages
+        - remaining_pages
+        - overage_pages
+        additionalProperties: true
+      - anyOf:
+        - type: object
+          properties:
+            period:
+              type: object
+              properties:
+                type:
+                  type: string
+                  const: subscription
+                start:
+                  $ref: '#/components/schemas/UtcDateTime'
+                end:
+                  $ref: '#/components/schemas/UtcDateTime'
+              required:
+              - type
+              - start
+              - end
+              additionalProperties: false
+            plan:
+              type: string
+              const: starter
+            included_pages:
+              type: number
+              const: 500
+            used_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            remaining_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            overage_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            attribution:
+              $ref: '#/components/schemas/UsageAttribution'
+          required:
+          - period
+          - plan
+          - included_pages
+          - used_pages
+          - remaining_pages
+          - overage_pages
+          additionalProperties: true
+        - type: object
+          properties:
+            period:
+              type: object
+              properties:
+                type:
+                  type: string
+                  const: subscription
+                start:
+                  $ref: '#/components/schemas/UtcDateTime'
+                end:
+                  $ref: '#/components/schemas/UtcDateTime'
+              required:
+              - type
+              - start
+              - end
+              additionalProperties: false
+            plan:
+              type: string
+              const: pro
+            included_pages:
+              type: number
+              const: 3000
+            used_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            remaining_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            overage_pages:
+              type: integer
+              minimum: 0
+              maximum: 9007199254740991
+            attribution:
+              $ref: '#/components/schemas/UsageAttribution'
+          required:
+          - period
+          - plan
+          - included_pages
+          - used_pages
+          - remaining_pages
+          - overage_pages
+          additionalProperties: true
+      - type: object
+        properties:
+          period:
+            type: 'null'
+          plan:
+            type: string
+            const: none
+          included_pages:
+            type: number
+            const: 0
+          used_pages:
+            type: number
+            const: 0
+          remaining_pages:
+            type: number
+            const: 0
+          overage_pages:
+            type: number
+            const: 0
+          attribution:
+            $ref: '#/components/schemas/UsageAttribution'
+        required:
+        - period
+        - plan
+        - included_pages
+        - used_pages
+        - remaining_pages
+        - overage_pages
+        additionalProperties: true
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Invoice API key

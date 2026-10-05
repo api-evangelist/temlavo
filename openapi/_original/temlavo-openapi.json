@@ -1,0 +1,3212 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Temlavo Invoice Extraction API",
+    "version": "1.0.0",
+    "description": "AI-extracted invoice data with practical consistency checks, duplicate signals, and predictable asynchronous integration."
+  },
+  "servers": [{ "url": "https://api.temlavo.com" }],
+  "paths": {
+    "/v1/documents": {
+      "post": {
+        "operationId": "createDocument",
+        "summary": "Create an invoice document and upload authorization",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "schema": { "$ref": "#/components/schemas/IdempotencyKey" },
+            "required": false,
+            "description": "Optional idempotency key for resource creation"
+          },
+          {
+            "in": "header",
+            "name": "Temlavo-Upload-Recovery",
+            "schema": { "type": "string", "const": "confirm-existing" },
+            "required": false,
+            "description": "Opt in to upload: null on an exact awaiting replay whose source already exists. Confirm with upload-complete before any PUT; create never admits processing."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateDocumentRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current document returned for an exact idempotent replay",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": { "type": "string", "const": "no-store" },
+                "description": "Prevents caching of signed capabilities and one-time secrets"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDocumentReplayResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Document created",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": { "type": "string", "const": "no-store" },
+                "description": "Prevents caching of signed capabilities and one-time secrets"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDocumentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "402": {
+            "description": "Processing entitlement required",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency conflict",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "410": {
+            "description": "Upload reservation expired",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "413": {
+            "description": "Document too large",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported content type",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "description": "Seconds to wait before retrying or polling",
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/documents/{document_id}/upload-complete": {
+      "post": {
+        "operationId": "completeDocumentUpload",
+        "summary": "Confirm a direct upload and admit it for processing",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "schema": { "$ref": "#/components/schemas/DocumentId" },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UploadCompleteRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current document returned for an idempotent replay",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": { "type": "string", "const": "no-store" },
+                "description": "Prevents caching of signed capabilities and one-time secrets"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadCompleteReplayResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Document admitted for processing",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": { "type": "string", "const": "no-store" },
+                "description": "Prevents caching of signed capabilities and one-time secrets"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadCompleteAcceptedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "402": {
+            "description": "Processing entitlement required",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "409": {
+            "description": "Upload incomplete or document state conflict",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "410": {
+            "description": "Upload reservation expired",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "413": {
+            "description": "Document too large",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported content type",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "422": {
+            "description": "Uploaded object size does not match the declaration",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "description": "Seconds to wait before retrying or polling",
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/documents/{document_id}": {
+      "get": {
+        "operationId": "getDocument",
+        "summary": "Retrieve the current document resource",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "schema": { "$ref": "#/components/schemas/DocumentId" },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current document resource",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Cache-Control": {
+                "required": true,
+                "schema": { "type": "string", "const": "no-store" },
+                "description": "Prevents caching of signed capabilities and one-time secrets"
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DocumentResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "410": {
+            "description": "Document expired",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "description": "Seconds to wait before retrying or polling",
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteDocument",
+        "summary": "Delete a document and its retained customer content",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document_id",
+            "schema": { "$ref": "#/components/schemas/DocumentId" },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No content",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "description": "Seconds to wait before retrying or polling",
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/usage": {
+      "get": {
+        "operationId": "getUsage",
+        "summary": "Retrieve current or historical processing usage",
+        "security": [{ "ApiKeyAuth": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "accounting_entity_id",
+            "schema": { "$ref": "#/components/schemas/AccountingEntityId" },
+            "required": false,
+            "description": "Optional accounting entity to attribute finalized processed pages for; account totals are unchanged"
+          },
+          {
+            "in": "query",
+            "name": "periods_ago",
+            "schema": { "$ref": "#/components/schemas/PeriodsAgo" },
+            "required": false,
+            "description": "Optional closed historical billing period to report, counted backwards from the current entitlement period (1 = most recently closed retained period)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UsageResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid usage query",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid API key",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "404": {
+            "description": "Requested historical usage period not found",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "X-Request-Id": {
+                "required": true,
+                "description": "Request identifier for support and diagnostics",
+                "schema": {
+                  "description": "Request identifier for support and diagnostics",
+                  "$ref": "#/components/schemas/RequestId"
+                }
+              },
+              "Retry-After": {
+                "required": true,
+                "description": "Seconds to wait before retrying or polling",
+                "schema": {
+                  "type": "string",
+                  "description": "Seconds to wait before retrying or polling"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "IdempotencyKey": {
+        "type": "string",
+        "pattern": "^[\\x21-\\x2B\\x2D-\\x7E]+$",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "CreateDocumentRequest": {
+        "type": "object",
+        "properties": {
+          "filename": { "$ref": "#/components/schemas/Filename" },
+          "content_type": { "$ref": "#/components/schemas/SourceContentType" },
+          "file_size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 20971520
+          },
+          "external_id": { "$ref": "#/components/schemas/ExternalId" },
+          "accounting_entity_id": {
+            "$ref": "#/components/schemas/AccountingEntityId"
+          },
+          "policy": { "$ref": "#/components/schemas/CreateDocumentPolicy" },
+          "callback_url": { "$ref": "#/components/schemas/CallbackUrl" },
+          "metadata": {
+            "default": {},
+            "$ref": "#/components/schemas/CustomerMetadata"
+          }
+        },
+        "required": ["filename", "content_type", "file_size_bytes"],
+        "additionalProperties": false
+      },
+      "Filename": {
+        "type": "string",
+        "description": "Filename with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "SourceContentType": {
+        "type": "string",
+        "enum": ["application/pdf", "image/jpeg", "image/png"]
+      },
+      "ExternalId": {
+        "type": "string",
+        "description": "Opaque external ID with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "AccountingEntityId": {
+        "type": "string",
+        "description": "Opaque case-sensitive accounting entity namespace with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters",
+        "minLength": 1,
+        "maxLength": 255
+      },
+      "CreateDocumentPolicy": {
+        "default": {
+          "required_fields": [],
+          "line_items": "advisory",
+          "checks": { "duplicate_detection": true }
+        },
+        "type": "object",
+        "properties": {
+          "required_fields": {
+            "default": [],
+            "maxItems": 17,
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RequiredFieldPath" },
+            "uniqueItems": true
+          },
+          "line_items": {
+            "default": "advisory",
+            "$ref": "#/components/schemas/LineItemsPolicy"
+          },
+          "checks": {
+            "default": { "duplicate_detection": true },
+            "type": "object",
+            "properties": {
+              "duplicate_detection": { "default": true, "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequiredFieldPath": {
+        "type": "string",
+        "enum": [
+          "/data/customer/name",
+          "/data/customer/tax_id",
+          "/data/invoice/currency",
+          "/data/invoice/due_date",
+          "/data/invoice/issue_date",
+          "/data/invoice/number",
+          "/data/invoice/payment_terms",
+          "/data/invoice/purchase_order_number",
+          "/data/totals/amount_due",
+          "/data/totals/discount",
+          "/data/totals/other_charges",
+          "/data/totals/shipping",
+          "/data/totals/subtotal",
+          "/data/totals/tax",
+          "/data/totals/total",
+          "/data/vendor/name",
+          "/data/vendor/tax_id"
+        ]
+      },
+      "LineItemsPolicy": {
+        "type": "string",
+        "enum": ["advisory", "review_on_failure", "required"]
+      },
+      "CallbackUrl": {
+        "type": "string",
+        "description": "HTTPS callback URL using a DNS hostname and port 443, with 1..2048 Unicode code points, no fragment, no surrounding whitespace, no embedded credentials, and no Cc/U+2028/U+2029 control characters",
+        "minLength": 1,
+        "maxLength": 2048,
+        "format": "uri",
+        "pattern": "^[Hh][Tt][Tt][Pp][Ss]://"
+      },
+      "CustomerMetadata": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "description": "Metadata key containing 1..64 ASCII letters, digits, _, ., or -",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "additionalProperties": {
+          "type": "string",
+          "description": "Opaque string preserved exactly, limited to 500 Unicode code points and required to be single-line/control-free (no Cc/U+2028/U+2029)",
+          "maxLength": 500
+        },
+        "maxProperties": 10
+      },
+      "DocumentId": { "type": "string", "pattern": "^doc_.+$" },
+      "UploadCompleteRequest": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PeriodsAgo": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]{0,8}$",
+        "minimum": 1,
+        "maximum": 999999999
+      },
+      "EventId": { "type": "string", "pattern": "^evt_.+$" },
+      "UtcDateTime": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+      },
+      "RequestId": { "type": "string", "pattern": "^req_.+$" },
+      "CreateDocumentReplayResponse": {
+        "anyOf": [
+          { "$ref": "#/components/schemas/CreateDocumentResponse" },
+          { "$ref": "#/components/schemas/ConfirmExistingUploadResponse" },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "queued" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "processing" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "completed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "needs_review" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "failed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/FailedDocumentDescriptor"
+              },
+              "error": { "$ref": "#/components/schemas/AsyncDocumentError" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "error"
+            ],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "CreateDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/DocumentId" },
+          "object": { "type": "string", "const": "document" },
+          "status": { "type": "string", "const": "awaiting_upload" },
+          "document_type": { "type": "string", "const": "invoice" },
+          "schema_version": { "type": "string", "const": "invoice.v1" },
+          "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+          "external_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "type": "null" }
+            ]
+          },
+          "accounting_entity_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/AccountingEntityId" },
+              { "type": "null" }
+            ]
+          },
+          "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+          "upload": { "$ref": "#/components/schemas/UploadAuthorization" },
+          "callback": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+              { "type": "null" }
+            ]
+          },
+          "metadata": { "$ref": "#/components/schemas/CustomerMetadata" }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "document_type",
+          "schema_version",
+          "created_at",
+          "external_id",
+          "accounting_entity_id",
+          "policy",
+          "upload",
+          "callback",
+          "metadata"
+        ],
+        "additionalProperties": true
+      },
+      "DocumentPolicy": {
+        "type": "object",
+        "properties": {
+          "required_fields": {
+            "maxItems": 17,
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RequiredFieldPath" },
+            "uniqueItems": true
+          },
+          "line_items": { "$ref": "#/components/schemas/LineItemsPolicy" },
+          "checks": {
+            "type": "object",
+            "properties": { "duplicate_detection": { "type": "boolean" } },
+            "required": ["duplicate_detection"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["required_fields", "line_items", "checks"],
+        "additionalProperties": false
+      },
+      "UploadAuthorization": {
+        "type": "object",
+        "properties": {
+          "method": { "type": "string", "const": "PUT" },
+          "url": { "$ref": "#/components/schemas/HttpsUrl" },
+          "headers": {
+            "type": "object",
+            "propertyNames": { "type": "string" },
+            "additionalProperties": { "type": "string" }
+          },
+          "expires_at": { "$ref": "#/components/schemas/UtcDateTime" }
+        },
+        "required": ["method", "url", "headers", "expires_at"],
+        "additionalProperties": true
+      },
+      "HttpsUrl": {
+        "type": "string",
+        "format": "uri",
+        "pattern": "^https:\\/\\/.*",
+        "description": "Public HTTPS URL without embedded username or password credentials"
+      },
+      "CallbackDeliverySummary": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "anyOf": [
+              { "type": "string", "pattern": "^evt_.+" },
+              { "type": "null" }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "delivered", "failed"]
+          },
+          "attempt_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "last_attempt_at": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/UtcDateTime" },
+              { "type": "null" }
+            ]
+          },
+          "next_attempt_at": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/UtcDateTime" },
+              { "type": "null" }
+            ]
+          },
+          "last_http_status": {
+            "anyOf": [
+              { "type": "integer", "minimum": 100, "maximum": 599 },
+              { "type": "null" }
+            ]
+          },
+          "last_error_code": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "delivered_at": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/UtcDateTime" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "event_id",
+          "status",
+          "attempt_count",
+          "last_attempt_at",
+          "next_attempt_at",
+          "last_http_status",
+          "last_error_code",
+          "delivered_at"
+        ],
+        "additionalProperties": true
+      },
+      "ConfirmExistingUploadResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/DocumentId" },
+          "object": { "type": "string", "const": "document" },
+          "status": { "type": "string", "const": "awaiting_upload" },
+          "document_type": { "type": "string", "const": "invoice" },
+          "schema_version": { "type": "string", "const": "invoice.v1" },
+          "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+          "external_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "type": "null" }
+            ]
+          },
+          "accounting_entity_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/AccountingEntityId" },
+              { "type": "null" }
+            ]
+          },
+          "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+          "upload": { "type": "null" },
+          "callback": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+              { "type": "null" }
+            ]
+          },
+          "metadata": { "$ref": "#/components/schemas/CustomerMetadata" }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "document_type",
+          "schema_version",
+          "created_at",
+          "external_id",
+          "accounting_entity_id",
+          "policy",
+          "upload",
+          "callback",
+          "metadata"
+        ],
+        "additionalProperties": true
+      },
+      "ResultDocumentDescriptor": {
+        "type": "object",
+        "properties": {
+          "filename": { "$ref": "#/components/schemas/Filename" },
+          "content_type": { "$ref": "#/components/schemas/SourceContentType" },
+          "page_count": { "type": "integer", "minimum": 1, "maximum": 20 }
+        },
+        "required": ["filename", "content_type", "page_count"],
+        "additionalProperties": true
+      },
+      "InvoiceDataV1": {
+        "type": "object",
+        "properties": {
+          "vendor": { "$ref": "#/components/schemas/InvoiceParty" },
+          "customer": { "$ref": "#/components/schemas/InvoiceParty" },
+          "invoice": { "$ref": "#/components/schemas/InvoiceHeader" },
+          "line_items": {
+            "maxItems": 500,
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/LineItem" }
+          },
+          "line_items_status": {
+            "$ref": "#/components/schemas/LineItemsStatus"
+          },
+          "totals": { "$ref": "#/components/schemas/InvoiceTotals" },
+          "taxes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TaxComponent" }
+          }
+        },
+        "required": [
+          "vendor",
+          "customer",
+          "invoice",
+          "line_items",
+          "line_items_status",
+          "totals",
+          "taxes"
+        ],
+        "additionalProperties": false,
+        "if": {
+          "properties": { "line_items_status": { "const": "unavailable" } },
+          "required": ["line_items_status"]
+        },
+        "then": {
+          "properties": { "line_items": { "type": "array", "maxItems": 0 } }
+        }
+      },
+      "InvoiceParty": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "tax_id": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "address": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Address" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["name", "tax_id", "address"],
+        "additionalProperties": false
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "line1": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "line2": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "city": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "region": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "postal_code": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "country_code": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CountryCode" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "line1",
+          "line2",
+          "city",
+          "region",
+          "postal_code",
+          "country_code"
+        ],
+        "additionalProperties": false
+      },
+      "CountryCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+      "InvoiceHeader": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "issue_date": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InvoiceDate" },
+              { "type": "null" }
+            ]
+          },
+          "due_date": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/InvoiceDate" },
+              { "type": "null" }
+            ]
+          },
+          "purchase_order_number": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "currency": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CurrencyCode" },
+              { "type": "null" }
+            ]
+          },
+          "payment_terms": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          }
+        },
+        "required": [
+          "number",
+          "issue_date",
+          "due_date",
+          "purchase_order_number",
+          "currency",
+          "payment_terms"
+        ],
+        "additionalProperties": false
+      },
+      "InvoiceDate": {
+        "type": "string",
+        "format": "date",
+        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+      },
+      "CurrencyCode": {
+        "type": "string",
+        "enum": [
+          "ADP",
+          "AED",
+          "AFA",
+          "AFN",
+          "ALK",
+          "ALL",
+          "AMD",
+          "ANG",
+          "AOA",
+          "AOK",
+          "AON",
+          "AOR",
+          "ARA",
+          "ARP",
+          "ARS",
+          "ARY",
+          "ATS",
+          "AUD",
+          "AWG",
+          "AYM",
+          "AZM",
+          "AZN",
+          "BAD",
+          "BAM",
+          "BBD",
+          "BDT",
+          "BEC",
+          "BEF",
+          "BEL",
+          "BGJ",
+          "BGK",
+          "BGL",
+          "BGN",
+          "BHD",
+          "BIF",
+          "BMD",
+          "BND",
+          "BOB",
+          "BOP",
+          "BOV",
+          "BRB",
+          "BRC",
+          "BRE",
+          "BRL",
+          "BRN",
+          "BRR",
+          "BSD",
+          "BTN",
+          "BUK",
+          "BWP",
+          "BYB",
+          "BYN",
+          "BYR",
+          "BZD",
+          "CAD",
+          "CDF",
+          "CHC",
+          "CHE",
+          "CHF",
+          "CHW",
+          "CLF",
+          "CLP",
+          "CNY",
+          "COP",
+          "COU",
+          "CRC",
+          "CSD",
+          "CSJ",
+          "CSK",
+          "CUC",
+          "CUP",
+          "CVE",
+          "CYP",
+          "CZK",
+          "DDM",
+          "DEM",
+          "DJF",
+          "DKK",
+          "DOP",
+          "DZD",
+          "ECS",
+          "ECV",
+          "EEK",
+          "EGP",
+          "ERN",
+          "ESA",
+          "ESB",
+          "ESP",
+          "ETB",
+          "EUR",
+          "FIM",
+          "FJD",
+          "FKP",
+          "FRF",
+          "GBP",
+          "GEK",
+          "GEL",
+          "GHC",
+          "GHP",
+          "GHS",
+          "GIP",
+          "GMD",
+          "GNE",
+          "GNF",
+          "GNS",
+          "GQE",
+          "GRD",
+          "GTQ",
+          "GWE",
+          "GWP",
+          "GYD",
+          "HKD",
+          "HNL",
+          "HRD",
+          "HRK",
+          "HTG",
+          "HUF",
+          "IDR",
+          "IEP",
+          "ILP",
+          "ILR",
+          "ILS",
+          "INR",
+          "IQD",
+          "IRR",
+          "ISJ",
+          "ISK",
+          "ITL",
+          "JMD",
+          "JOD",
+          "JPY",
+          "KES",
+          "KGS",
+          "KHR",
+          "KMF",
+          "KPW",
+          "KRW",
+          "KWD",
+          "KYD",
+          "KZT",
+          "LAJ",
+          "LAK",
+          "LBP",
+          "LKR",
+          "LRD",
+          "LSL",
+          "LSM",
+          "LTL",
+          "LTT",
+          "LUC",
+          "LUF",
+          "LUL",
+          "LVL",
+          "LVR",
+          "LYD",
+          "MAD",
+          "MDL",
+          "MGA",
+          "MGF",
+          "MKD",
+          "MLF",
+          "MMK",
+          "MNT",
+          "MOP",
+          "MRO",
+          "MRU",
+          "MTL",
+          "MTP",
+          "MUR",
+          "MVQ",
+          "MVR",
+          "MWK",
+          "MXN",
+          "MXP",
+          "MXV",
+          "MYR",
+          "MZE",
+          "MZM",
+          "MZN",
+          "NAD",
+          "NGN",
+          "NIC",
+          "NIO",
+          "NLG",
+          "NOK",
+          "NPR",
+          "NZD",
+          "OMR",
+          "PAB",
+          "PEH",
+          "PEI",
+          "PEN",
+          "PES",
+          "PGK",
+          "PHP",
+          "PKR",
+          "PLN",
+          "PLZ",
+          "PTE",
+          "PYG",
+          "QAR",
+          "RHD",
+          "ROK",
+          "ROL",
+          "RON",
+          "RSD",
+          "RUB",
+          "RUR",
+          "RWF",
+          "SAR",
+          "SBD",
+          "SCR",
+          "SDD",
+          "SDG",
+          "SDP",
+          "SEK",
+          "SGD",
+          "SHP",
+          "SIT",
+          "SKK",
+          "SLE",
+          "SLL",
+          "SOS",
+          "SRD",
+          "SRG",
+          "SSP",
+          "STD",
+          "STN",
+          "SUR",
+          "SVC",
+          "SYP",
+          "SZL",
+          "THB",
+          "TJR",
+          "TJS",
+          "TMM",
+          "TMT",
+          "TND",
+          "TOP",
+          "TPE",
+          "TRL",
+          "TRY",
+          "TTD",
+          "TWD",
+          "TZS",
+          "UAH",
+          "UAK",
+          "UGS",
+          "UGW",
+          "UGX",
+          "USD",
+          "USN",
+          "USS",
+          "UYI",
+          "UYN",
+          "UYP",
+          "UYU",
+          "UYW",
+          "UZS",
+          "VEB",
+          "VED",
+          "VEF",
+          "VES",
+          "VNC",
+          "VND",
+          "VUV",
+          "WST",
+          "XAD",
+          "XAF",
+          "XAG",
+          "XAU",
+          "XBA",
+          "XBB",
+          "XBC",
+          "XBD",
+          "XCD",
+          "XCG",
+          "XDR",
+          "XEU",
+          "XFO",
+          "XFU",
+          "XOF",
+          "XPD",
+          "XPF",
+          "XPT",
+          "XRE",
+          "XSU",
+          "XTS",
+          "XUA",
+          "XXX",
+          "YDD",
+          "YER",
+          "YUD",
+          "YUM",
+          "YUN",
+          "ZAL",
+          "ZAR",
+          "ZMK",
+          "ZMW",
+          "ZRN",
+          "ZRZ",
+          "ZWC",
+          "ZWD",
+          "ZWG",
+          "ZWL",
+          "ZWN",
+          "ZWR"
+        ]
+      },
+      "LineItem": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "product_code": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "quantity": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/SignedDecimalString" },
+              { "type": "null" }
+            ]
+          },
+          "unit_of_measure": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "unit_price": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "discount": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/NonNegativeMoney" },
+              { "type": "null" }
+            ]
+          },
+          "tax": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/LineTax" },
+              { "type": "null" }
+            ]
+          },
+          "line_total": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "product_code",
+          "quantity",
+          "unit_of_measure",
+          "unit_price",
+          "discount",
+          "tax",
+          "line_total"
+        ],
+        "additionalProperties": false
+      },
+      "SignedDecimalString": {
+        "type": "string",
+        "pattern": "^[+-]?\\d+(?:\\.\\d+)?$"
+      },
+      "Money": {
+        "type": "object",
+        "properties": {
+          "amount": { "$ref": "#/components/schemas/SignedDecimalString" },
+          "currency": { "$ref": "#/components/schemas/CurrencyCode" }
+        },
+        "required": ["amount", "currency"],
+        "additionalProperties": false
+      },
+      "NonNegativeMoney": {
+        "type": "object",
+        "properties": {
+          "amount": { "$ref": "#/components/schemas/NonNegativeDecimalString" },
+          "currency": { "$ref": "#/components/schemas/CurrencyCode" }
+        },
+        "required": ["amount", "currency"],
+        "additionalProperties": false
+      },
+      "NonNegativeDecimalString": {
+        "type": "string",
+        "pattern": "^\\+?\\d+(?:\\.\\d+)?$"
+      },
+      "LineTax": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "rate": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/NonNegativeDecimalString" },
+              { "type": "null" }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["label", "rate", "amount"],
+        "additionalProperties": false
+      },
+      "LineItemsStatus": {
+        "type": "string",
+        "enum": ["complete", "partial", "unavailable"],
+        "description": "AI assessment of line-item extraction. Complete is not independent proof that every source item was captured."
+      },
+      "InvoiceTotals": {
+        "type": "object",
+        "properties": {
+          "subtotal": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "discount": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/NonNegativeMoney" },
+              { "type": "null" }
+            ]
+          },
+          "shipping": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "other_charges": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "tax": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "total": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "amount_due": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": [
+          "subtotal",
+          "discount",
+          "shipping",
+          "other_charges",
+          "tax",
+          "total",
+          "amount_due"
+        ],
+        "additionalProperties": false
+      },
+      "TaxComponent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["sales_tax", "vat", "gst", "other", "unknown"]
+          },
+          "label": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "rate": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/NonNegativeDecimalString" },
+              { "type": "null" }
+            ]
+          },
+          "taxable_amount": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "amount": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/Money" },
+              { "type": "null" }
+            ]
+          },
+          "jurisdiction": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          }
+        },
+        "required": [
+          "type",
+          "label",
+          "rate",
+          "taxable_amount",
+          "amount",
+          "jurisdiction"
+        ],
+        "additionalProperties": false
+      },
+      "ValidationCheck": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "status": {
+            "type": "string",
+            "enum": ["pass", "fail", "not_evaluable"]
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "review"]
+          },
+          "message": {
+            "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+          },
+          "paths": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/InvoicePath" }
+          },
+          "details": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/JsonValue" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["code", "status", "severity", "message", "paths"],
+        "additionalProperties": true
+      },
+      "InvoicePath": { "type": "string", "pattern": "^\\/data\\/.+" },
+      "JsonValue": { "$ref": "#/components/schemas/__schema0" },
+      "Validation": {
+        "type": "object",
+        "properties": {
+          "review_required": { "type": "boolean" },
+          "checks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationCheck" }
+          }
+        },
+        "required": ["review_required", "checks"],
+        "additionalProperties": true
+      },
+      "ProcessingMetadata": {
+        "type": "object",
+        "properties": {
+          "pipeline_version": { "type": "string", "minLength": 1 },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "processed_pages": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "result_expires_at": { "$ref": "#/components/schemas/UtcDateTime" }
+        },
+        "required": [
+          "pipeline_version",
+          "duration_ms",
+          "processed_pages",
+          "result_expires_at"
+        ],
+        "additionalProperties": true
+      },
+      "FailedDocumentDescriptor": {
+        "type": "object",
+        "properties": {
+          "filename": { "$ref": "#/components/schemas/Filename" },
+          "content_type": { "$ref": "#/components/schemas/SourceContentType" },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["filename", "content_type", "page_count"],
+        "additionalProperties": true
+      },
+      "AsyncDocumentError": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "retryable": { "type": "boolean" }
+        },
+        "required": ["code", "message", "retryable"],
+        "additionalProperties": true
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "error": { "$ref": "#/components/schemas/ApiErrorBody" }
+        },
+        "required": ["error"],
+        "additionalProperties": true
+      },
+      "ApiErrorBody": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "request_id": { "$ref": "#/components/schemas/RequestId" },
+          "retryable": { "type": "boolean" },
+          "details": { "$ref": "#/components/schemas/JsonValue" }
+        },
+        "required": ["type", "code", "message", "request_id", "retryable"],
+        "additionalProperties": true
+      },
+      "UploadCompleteReplayResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "queued" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "processing" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "completed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "needs_review" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "failed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/FailedDocumentDescriptor"
+              },
+              "error": { "$ref": "#/components/schemas/AsyncDocumentError" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "error"
+            ],
+            "additionalProperties": true
+          }
+        ],
+        "type": "object"
+      },
+      "UploadCompleteAcceptedResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/DocumentId" },
+          "object": { "type": "string", "const": "document" },
+          "document_type": { "type": "string", "const": "invoice" },
+          "schema_version": { "type": "string", "const": "invoice.v1" },
+          "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+          "external_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/ExternalId" },
+              { "type": "null" }
+            ]
+          },
+          "accounting_entity_id": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/AccountingEntityId" },
+              { "type": "null" }
+            ]
+          },
+          "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+          "callback": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+              { "type": "null" }
+            ]
+          },
+          "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+          "status": { "type": "string", "const": "queued" }
+        },
+        "required": [
+          "id",
+          "object",
+          "document_type",
+          "schema_version",
+          "created_at",
+          "external_id",
+          "accounting_entity_id",
+          "policy",
+          "callback",
+          "metadata",
+          "status"
+        ],
+        "additionalProperties": true
+      },
+      "DocumentResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "awaiting_upload" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "queued" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "processing" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "completed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "needs_review" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/ResultDocumentDescriptor"
+              },
+              "data": { "$ref": "#/components/schemas/InvoiceDataV1" },
+              "validation": { "$ref": "#/components/schemas/Validation" },
+              "processing": {
+                "$ref": "#/components/schemas/ProcessingMetadata"
+              }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "data",
+              "validation",
+              "processing"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "$ref": "#/components/schemas/DocumentId" },
+              "object": { "type": "string", "const": "document" },
+              "document_type": { "type": "string", "const": "invoice" },
+              "schema_version": { "type": "string", "const": "invoice.v1" },
+              "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              },
+              "policy": { "$ref": "#/components/schemas/DocumentPolicy" },
+              "callback": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/CallbackDeliverySummary" },
+                  { "type": "null" }
+                ]
+              },
+              "metadata": { "$ref": "#/components/schemas/CustomerMetadata" },
+              "status": { "type": "string", "const": "failed" },
+              "completed_at": { "$ref": "#/components/schemas/UtcDateTime" },
+              "document": {
+                "$ref": "#/components/schemas/FailedDocumentDescriptor"
+              },
+              "error": { "$ref": "#/components/schemas/AsyncDocumentError" }
+            },
+            "required": [
+              "id",
+              "object",
+              "document_type",
+              "schema_version",
+              "created_at",
+              "external_id",
+              "accounting_entity_id",
+              "policy",
+              "callback",
+              "metadata",
+              "status",
+              "completed_at",
+              "document",
+              "error"
+            ],
+            "additionalProperties": true
+          }
+        ],
+        "type": "object"
+      },
+      "UsageResponse": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "period": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "const": "trial" },
+                  "start": { "$ref": "#/components/schemas/UtcDateTime" },
+                  "end": { "$ref": "#/components/schemas/UtcDateTime" }
+                },
+                "required": ["type", "start", "end"],
+                "additionalProperties": false
+              },
+              "plan": { "type": "string", "const": "trial" },
+              "included_pages": { "type": "number", "const": 100 },
+              "used_pages": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "remaining_pages": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "overage_pages": { "type": "number", "const": 0 },
+              "attribution": { "$ref": "#/components/schemas/UsageAttribution" }
+            },
+            "required": [
+              "period",
+              "plan",
+              "included_pages",
+              "used_pages",
+              "remaining_pages",
+              "overage_pages"
+            ],
+            "additionalProperties": true
+          },
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "period": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "const": "subscription" },
+                      "start": { "$ref": "#/components/schemas/UtcDateTime" },
+                      "end": { "$ref": "#/components/schemas/UtcDateTime" }
+                    },
+                    "required": ["type", "start", "end"],
+                    "additionalProperties": false
+                  },
+                  "plan": { "type": "string", "const": "starter" },
+                  "included_pages": { "type": "number", "const": 500 },
+                  "used_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "remaining_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "overage_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "attribution": {
+                    "$ref": "#/components/schemas/UsageAttribution"
+                  }
+                },
+                "required": [
+                  "period",
+                  "plan",
+                  "included_pages",
+                  "used_pages",
+                  "remaining_pages",
+                  "overage_pages"
+                ],
+                "additionalProperties": true
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "period": {
+                    "type": "object",
+                    "properties": {
+                      "type": { "type": "string", "const": "subscription" },
+                      "start": { "$ref": "#/components/schemas/UtcDateTime" },
+                      "end": { "$ref": "#/components/schemas/UtcDateTime" }
+                    },
+                    "required": ["type", "start", "end"],
+                    "additionalProperties": false
+                  },
+                  "plan": { "type": "string", "const": "pro" },
+                  "included_pages": { "type": "number", "const": 3000 },
+                  "used_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "remaining_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "overage_pages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "attribution": {
+                    "$ref": "#/components/schemas/UsageAttribution"
+                  }
+                },
+                "required": [
+                  "period",
+                  "plan",
+                  "included_pages",
+                  "used_pages",
+                  "remaining_pages",
+                  "overage_pages"
+                ],
+                "additionalProperties": true
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "period": { "type": "null" },
+              "plan": { "type": "string", "const": "none" },
+              "included_pages": { "type": "number", "const": 0 },
+              "used_pages": { "type": "number", "const": 0 },
+              "remaining_pages": { "type": "number", "const": 0 },
+              "overage_pages": { "type": "number", "const": 0 },
+              "attribution": { "$ref": "#/components/schemas/UsageAttribution" }
+            },
+            "required": [
+              "period",
+              "plan",
+              "included_pages",
+              "used_pages",
+              "remaining_pages",
+              "overage_pages"
+            ],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "UsageAttribution": {
+        "type": "object",
+        "properties": {
+          "accounting_entity_id": {
+            "$ref": "#/components/schemas/AccountingEntityId"
+          },
+          "processed_pages": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["accounting_entity_id", "processed_pages"],
+        "additionalProperties": false
+      },
+      "__schema0": {
+        "anyOf": [
+          { "type": "string" },
+          { "type": "number" },
+          { "type": "boolean" },
+          { "type": "null" },
+          {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/__schema0" }
+          },
+          {
+            "type": "object",
+            "propertyNames": { "type": "string" },
+            "additionalProperties": { "$ref": "#/components/schemas/__schema0" }
+          }
+        ]
+      },
+      "DocumentFinishedEvent": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/components/schemas/EventId" },
+          "object": { "type": "string", "const": "event" },
+          "type": { "type": "string", "const": "document.finished" },
+          "created_at": { "$ref": "#/components/schemas/UtcDateTime" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "document_id": { "$ref": "#/components/schemas/DocumentId" },
+              "external_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/ExternalId" },
+                  { "type": "null" }
+                ]
+              },
+              "accounting_entity_id": {
+                "anyOf": [
+                  { "$ref": "#/components/schemas/AccountingEntityId" },
+                  { "type": "null" }
+                ]
+              }
+            },
+            "required": ["document_id", "external_id", "accounting_entity_id"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["id", "object", "type", "created_at", "data"],
+        "additionalProperties": false
+      },
+      "ApiErrorCode": {
+        "type": "string",
+        "enum": [
+          "invalid_request",
+          "invalid_callback_url",
+          "invalid_api_key",
+          "billing_required",
+          "forbidden",
+          "document_not_found",
+          "idempotency_conflict",
+          "upload_not_complete",
+          "invalid_document_state",
+          "upload_expired",
+          "document_expired",
+          "document_too_large",
+          "unsupported_content_type",
+          "upload_size_mismatch",
+          "invalid_document",
+          "usage_limit_exceeded",
+          "usage_period_not_found",
+          "rate_limit_exceeded",
+          "internal_error",
+          "service_unavailable"
+        ]
+      },
+      "AsyncDocumentErrorCode": {
+        "type": "string",
+        "enum": [
+          "document_processing_failed",
+          "processing_timeout",
+          "invalid_document",
+          "corrupt_pdf",
+          "encrypted_pdf",
+          "unsupported_document_type",
+          "multiple_invoices_detected",
+          "document_page_limit_exceeded",
+          "document_complexity_limit_exceeded",
+          "result_too_large",
+          "ocr_failed",
+          "semantic_extraction_failed",
+          "usage_limit_exceeded",
+          "billing_required"
+        ]
+      },
+      "CallbackDeliveryErrorCode": {
+        "type": "string",
+        "enum": [
+          "dns_error",
+          "unsafe_destination",
+          "connection_error",
+          "timeout",
+          "tls_error",
+          "http_error",
+          "response_too_large"
+        ]
+      },
+      "ValidationCheckCode": {
+        "type": "string",
+        "enum": [
+          "critical_field_unresolved",
+          "required_field_unresolved",
+          "semantic_issue",
+          "document_classification",
+          "line_item_arithmetic",
+          "line_items_requirement",
+          "tax_arithmetic",
+          "total_consistency",
+          "currency_consistency",
+          "date_consistency",
+          "exact_document_duplicate",
+          "possible_invoice_duplicate"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Invoice API key"
+      }
+    }
+  }
+}

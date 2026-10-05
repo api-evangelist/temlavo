@@ -1,0 +1,26 @@
+{
+  "provider": "temlavo",
+  "sources": [
+    "_original/temlavo-openapi.json"
+  ],
+  "outputs": [
+    "temlavo-documents-api-openapi.yml",
+    "temlavo-usage-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "temlavo-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "temlavo-openapi.json: tagged paths POST /v1/documents -> Documents",
+    "temlavo-openapi.json: tagged paths POST /v1/documents/{document_id}/upload-complete -> Documents",
+    "temlavo-openapi.json: tagged paths GET /v1/documents/{document_id} -> Documents",
+    "temlavo-openapi.json: tagged paths DELETE /v1/documents/{document_id} -> Documents",
+    "temlavo-openapi.json: tagged paths GET /v1/usage -> Usage",
+    "temlavo-openapi.json: declared missing tag: Documents",
+    "temlavo-openapi.json: declared missing tag: Usage",
+    "apis.yml register: written (+2 apis, 2 total)"
+  ],
+  "skipped": []
+}

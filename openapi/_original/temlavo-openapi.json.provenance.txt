@@ -1,0 +1,6 @@
+generated: '2026-10-05'
+method: probed
+source: https://temlavo.com/openapi.json
+operations: 5
+version: 3.1.0
+note: saved verbatim at the provider's request (api-evangelist/temlavo#1); the contract is published on the docs host, the runtime is https://api.temlavo.com
