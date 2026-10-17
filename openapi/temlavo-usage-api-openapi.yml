@@ -103,25 +103,9 @@ paths:
       - Usage
 components:
   schemas:
-    __schema0:
-      anyOf:
-      - type: string
-      - type: number
-      - type: boolean
-      - type: 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/__schema0'
-      - type: object
-        propertyNames:
-          type: string
-        additionalProperties:
-          $ref: '#/components/schemas/__schema0'
-    PeriodsAgo:
+    RequestId:
       type: string
-      pattern: ^[1-9][0-9]{0,8}$
-      minimum: 1
-      maximum: 999999999
+      pattern: ^req_.+$
     UsageAttribution:
       type: object
       properties:
@@ -135,18 +119,14 @@ components:
       - accounting_entity_id
       - processed_pages
       additionalProperties: false
-    RequestId:
-      type: string
-      pattern: ^req_.+$
-    AccountingEntityId:
-      type: string
-      description: Opaque case-sensitive accounting entity namespace with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
-      minLength: 1
-      maxLength: 255
-    UtcDateTime:
-      type: string
-      format: date-time
-      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+    ApiError:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiErrorBody'
+      required:
+      - error
+      additionalProperties: true
     ApiErrorBody:
       type: object
       properties:
@@ -172,16 +152,36 @@ components:
       - request_id
       - retryable
       additionalProperties: true
+    __schema0:
+      anyOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/__schema0'
+      - type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          $ref: '#/components/schemas/__schema0'
     JsonValue:
       $ref: '#/components/schemas/__schema0'
-    ApiError:
-      type: object
-      properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorBody'
-      required:
-      - error
-      additionalProperties: true
+    PeriodsAgo:
+      type: string
+      pattern: ^[1-9][0-9]{0,8}$
+      minimum: 1
+      maximum: 999999999
+    AccountingEntityId:
+      type: string
+      description: Opaque case-sensitive accounting entity namespace with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
+      minLength: 1
+      maxLength: 255
+    UtcDateTime:
+      type: string
+      format: date-time
+      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
     UsageResponse:
       anyOf:
       - type: object

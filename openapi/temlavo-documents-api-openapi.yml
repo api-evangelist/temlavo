@@ -580,6 +580,17 @@ paths:
       - Documents
 components:
   schemas:
+    NonNegativeMoney:
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/NonNegativeDecimalString'
+        currency:
+          $ref: '#/components/schemas/CurrencyCode'
+      required:
+      - amount
+      - currency
+      additionalProperties: false
     ConfirmExistingUploadResponse:
       type: object
       properties:
@@ -631,107 +642,97 @@ components:
       - callback
       - metadata
       additionalProperties: true
-    InvoiceTotals:
+    InvoiceHeader:
       type: object
       properties:
-        subtotal:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        discount:
-          anyOf:
-          - $ref: '#/components/schemas/NonNegativeMoney'
-          - type: 'null'
-        shipping:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        other_charges:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        tax:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        total:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        amount_due:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-      required:
-      - subtotal
-      - discount
-      - shipping
-      - other_charges
-      - tax
-      - total
-      - amount_due
-      additionalProperties: false
-    LineTax:
-      type: object
-      properties:
-        label:
+        number:
           anyOf:
           - type: string
             minLength: 1
           - type: 'null'
-        rate:
+        issue_date:
           anyOf:
-          - $ref: '#/components/schemas/NonNegativeDecimalString'
+          - $ref: '#/components/schemas/InvoiceDate'
           - type: 'null'
-        amount:
+        due_date:
           anyOf:
-          - $ref: '#/components/schemas/Money'
+          - $ref: '#/components/schemas/InvoiceDate'
+          - type: 'null'
+        purchase_order_number:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        currency:
+          anyOf:
+          - $ref: '#/components/schemas/CurrencyCode'
+          - type: 'null'
+        payment_terms:
+          anyOf:
+          - type: string
+            minLength: 1
           - type: 'null'
       required:
-      - label
-      - rate
-      - amount
+      - number
+      - issue_date
+      - due_date
+      - purchase_order_number
+      - currency
+      - payment_terms
       additionalProperties: false
-    NonNegativeDecimalString:
-      type: string
-      pattern: ^\+?\d+(?:\.\d+)?$
-    CountryCode:
-      type: string
-      pattern: ^[A-Z]{2}$
-    __schema0:
-      anyOf:
-      - type: string
-      - type: number
-      - type: boolean
-      - type: 'null'
-      - type: array
-        items:
-          $ref: '#/components/schemas/__schema0'
-      - type: object
-        propertyNames:
-          type: string
-        additionalProperties:
-          $ref: '#/components/schemas/__schema0'
-    ResultDocumentDescriptor:
+    CallbackDeliverySummary:
       type: object
       properties:
-        filename:
-          $ref: '#/components/schemas/Filename'
-        content_type:
-          $ref: '#/components/schemas/SourceContentType'
-        page_count:
+        event_id:
+          anyOf:
+          - type: string
+            pattern: ^evt_.+
+          - type: 'null'
+        status:
+          type: string
+          enum:
+          - pending
+          - delivered
+          - failed
+        attempt_count:
           type: integer
-          minimum: 1
-          maximum: 20
+          minimum: 0
+          maximum: 9007199254740991
+        last_attempt_at:
+          anyOf:
+          - $ref: '#/components/schemas/UtcDateTime'
+          - type: 'null'
+        next_attempt_at:
+          anyOf:
+          - $ref: '#/components/schemas/UtcDateTime'
+          - type: 'null'
+        last_http_status:
+          anyOf:
+          - type: integer
+            minimum: 100
+            maximum: 599
+          - type: 'null'
+        last_error_code:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        delivered_at:
+          anyOf:
+          - $ref: '#/components/schemas/UtcDateTime'
+          - type: 'null'
       required:
-      - filename
-      - content_type
-      - page_count
+      - event_id
+      - status
+      - attempt_count
+      - last_attempt_at
+      - next_attempt_at
+      - last_http_status
+      - last_error_code
+      - delivered_at
       additionalProperties: true
-    CreateDocumentReplayResponse:
-      anyOf:
-      - $ref: '#/components/schemas/CreateDocumentResponse'
-      - $ref: '#/components/schemas/ConfirmExistingUploadResponse'
+    UploadCompleteReplayResponse:
+      oneOf:
       - type: object
         properties:
           id:
@@ -1006,73 +1007,28 @@ components:
         - document
         - error
         additionalProperties: true
-    ProcessingMetadata:
+      type: object
+    LineTax:
       type: object
       properties:
-        pipeline_version:
-          type: string
-          minLength: 1
-        duration_ms:
-          type: integer
-          minimum: 0
-          maximum: 9007199254740991
-        processed_pages:
-          type: integer
-          exclusiveMinimum: 0
-          maximum: 9007199254740991
-        result_expires_at:
-          $ref: '#/components/schemas/UtcDateTime'
+        label:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        rate:
+          anyOf:
+          - $ref: '#/components/schemas/NonNegativeDecimalString'
+          - type: 'null'
+        amount:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
       required:
-      - pipeline_version
-      - duration_ms
-      - processed_pages
-      - result_expires_at
-      additionalProperties: true
-    HttpsUrl:
-      type: string
-      format: uri
-      pattern: ^https:\/\/.*
-      description: Public HTTPS URL without embedded username or password credentials
-    UploadCompleteRequest:
-      type: object
-      properties: {}
+      - label
+      - rate
+      - amount
       additionalProperties: false
-    CallbackUrl:
-      type: string
-      description: HTTPS callback URL using a DNS hostname and port 443, with 1..2048 Unicode code points, no fragment, no surrounding whitespace, no embedded credentials, and no Cc/U+2028/U+2029 control characters
-      minLength: 1
-      maxLength: 2048
-      format: uri
-      pattern: ^[Hh][Tt][Tt][Pp][Ss]://
-    CustomerMetadata:
-      type: object
-      propertyNames:
-        type: string
-        pattern: ^[A-Za-z0-9_.-]+$
-        description: Metadata key containing 1..64 ASCII letters, digits, _, ., or -
-        minLength: 1
-        maxLength: 64
-      additionalProperties:
-        type: string
-        description: Opaque string preserved exactly, limited to 500 Unicode code points and required to be single-line/control-free (no Cc/U+2028/U+2029)
-        maxLength: 500
-      maxProperties: 10
-    RequestId:
-      type: string
-      pattern: ^req_.+$
-    Validation:
-      type: object
-      properties:
-        review_required:
-          type: boolean
-        checks:
-          type: array
-          items:
-            $ref: '#/components/schemas/ValidationCheck'
-      required:
-      - review_required
-      - checks
-      additionalProperties: true
     CurrencyCode:
       type: string
       enum:
@@ -1383,67 +1339,597 @@ components:
       - ZWL
       - ZWN
       - ZWR
-    CreateDocumentRequest:
+    RequiredFieldPath:
+      type: string
+      enum:
+      - /data/customer/name
+      - /data/customer/tax_id
+      - /data/invoice/currency
+      - /data/invoice/due_date
+      - /data/invoice/issue_date
+      - /data/invoice/number
+      - /data/invoice/payment_terms
+      - /data/invoice/purchase_order_number
+      - /data/totals/amount_due
+      - /data/totals/discount
+      - /data/totals/other_charges
+      - /data/totals/shipping
+      - /data/totals/subtotal
+      - /data/totals/tax
+      - /data/totals/total
+      - /data/vendor/name
+      - /data/vendor/tax_id
+    CreateDocumentResponse:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/DocumentId'
+        object:
+          type: string
+          const: document
+        status:
+          type: string
+          const: awaiting_upload
+        document_type:
+          type: string
+          const: invoice
+        schema_version:
+          type: string
+          const: invoice.v1
+        created_at:
+          $ref: '#/components/schemas/UtcDateTime'
+        external_id:
+          anyOf:
+          - $ref: '#/components/schemas/ExternalId'
+          - type: 'null'
+        accounting_entity_id:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingEntityId'
+          - type: 'null'
+        policy:
+          $ref: '#/components/schemas/DocumentPolicy'
+        upload:
+          $ref: '#/components/schemas/UploadAuthorization'
+        callback:
+          anyOf:
+          - $ref: '#/components/schemas/CallbackDeliverySummary'
+          - type: 'null'
+        metadata:
+          $ref: '#/components/schemas/CustomerMetadata'
+      required:
+      - id
+      - object
+      - status
+      - document_type
+      - schema_version
+      - created_at
+      - external_id
+      - accounting_entity_id
+      - policy
+      - upload
+      - callback
+      - metadata
+      additionalProperties: true
+    AsyncDocumentError:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        retryable:
+          type: boolean
+      required:
+      - code
+      - message
+      - retryable
+      additionalProperties: true
+    FailedDocumentDescriptor:
       type: object
       properties:
         filename:
           $ref: '#/components/schemas/Filename'
         content_type:
           $ref: '#/components/schemas/SourceContentType'
-        file_size_bytes:
-          type: integer
-          exclusiveMinimum: 0
-          maximum: 20971520
-        external_id:
-          $ref: '#/components/schemas/ExternalId'
-        accounting_entity_id:
-          $ref: '#/components/schemas/AccountingEntityId'
-        policy:
-          $ref: '#/components/schemas/CreateDocumentPolicy'
-        callback_url:
-          $ref: '#/components/schemas/CallbackUrl'
-        metadata:
-          default: {}
-          $ref: '#/components/schemas/CustomerMetadata'
+        page_count:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0
+            maximum: 9007199254740991
+          - type: 'null'
       required:
       - filename
       - content_type
-      - file_size_bytes
-      additionalProperties: false
-    CreateDocumentPolicy:
-      default:
-        required_fields: []
-        line_items: advisory
-        checks:
-          duplicate_detection: true
+      - page_count
+      additionalProperties: true
+    Address:
       type: object
       properties:
-        required_fields:
-          default: []
-          maxItems: 17
-          type: array
-          items:
-            $ref: '#/components/schemas/RequiredFieldPath'
-          uniqueItems: true
-        line_items:
-          default: advisory
-          $ref: '#/components/schemas/LineItemsPolicy'
-        checks:
-          default:
-            duplicate_detection: true
-          type: object
-          properties:
-            duplicate_detection:
-              default: true
-              type: boolean
-          additionalProperties: false
+        line1:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        line2:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        city:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        region:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        postal_code:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        country_code:
+          anyOf:
+          - $ref: '#/components/schemas/CountryCode'
+          - type: 'null'
+      required:
+      - line1
+      - line2
+      - city
+      - region
+      - postal_code
+      - country_code
       additionalProperties: false
-    LineItemsPolicy:
+    CreateDocumentReplayResponse:
+      anyOf:
+      - $ref: '#/components/schemas/CreateDocumentResponse'
+      - $ref: '#/components/schemas/ConfirmExistingUploadResponse'
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentId'
+          object:
+            type: string
+            const: document
+          document_type:
+            type: string
+            const: invoice
+          schema_version:
+            type: string
+            const: invoice.v1
+          created_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          external_id:
+            anyOf:
+            - $ref: '#/components/schemas/ExternalId'
+            - type: 'null'
+          accounting_entity_id:
+            anyOf:
+            - $ref: '#/components/schemas/AccountingEntityId'
+            - type: 'null'
+          policy:
+            $ref: '#/components/schemas/DocumentPolicy'
+          callback:
+            anyOf:
+            - $ref: '#/components/schemas/CallbackDeliverySummary'
+            - type: 'null'
+          metadata:
+            $ref: '#/components/schemas/CustomerMetadata'
+          status:
+            type: string
+            const: queued
+        required:
+        - id
+        - object
+        - document_type
+        - schema_version
+        - created_at
+        - external_id
+        - accounting_entity_id
+        - policy
+        - callback
+        - metadata
+        - status
+        additionalProperties: true
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentId'
+          object:
+            type: string
+            const: document
+          document_type:
+            type: string
+            const: invoice
+          schema_version:
+            type: string
+            const: invoice.v1
+          created_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          external_id:
+            anyOf:
+            - $ref: '#/components/schemas/ExternalId'
+            - type: 'null'
+          accounting_entity_id:
+            anyOf:
+            - $ref: '#/components/schemas/AccountingEntityId'
+            - type: 'null'
+          policy:
+            $ref: '#/components/schemas/DocumentPolicy'
+          callback:
+            anyOf:
+            - $ref: '#/components/schemas/CallbackDeliverySummary'
+            - type: 'null'
+          metadata:
+            $ref: '#/components/schemas/CustomerMetadata'
+          status:
+            type: string
+            const: processing
+        required:
+        - id
+        - object
+        - document_type
+        - schema_version
+        - created_at
+        - external_id
+        - accounting_entity_id
+        - policy
+        - callback
+        - metadata
+        - status
+        additionalProperties: true
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentId'
+          object:
+            type: string
+            const: document
+          document_type:
+            type: string
+            const: invoice
+          schema_version:
+            type: string
+            const: invoice.v1
+          created_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          external_id:
+            anyOf:
+            - $ref: '#/components/schemas/ExternalId'
+            - type: 'null'
+          accounting_entity_id:
+            anyOf:
+            - $ref: '#/components/schemas/AccountingEntityId'
+            - type: 'null'
+          policy:
+            $ref: '#/components/schemas/DocumentPolicy'
+          callback:
+            anyOf:
+            - $ref: '#/components/schemas/CallbackDeliverySummary'
+            - type: 'null'
+          metadata:
+            $ref: '#/components/schemas/CustomerMetadata'
+          status:
+            type: string
+            const: completed
+          completed_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          document:
+            $ref: '#/components/schemas/ResultDocumentDescriptor'
+          data:
+            $ref: '#/components/schemas/InvoiceDataV1'
+          validation:
+            $ref: '#/components/schemas/Validation'
+          processing:
+            $ref: '#/components/schemas/ProcessingMetadata'
+        required:
+        - id
+        - object
+        - document_type
+        - schema_version
+        - created_at
+        - external_id
+        - accounting_entity_id
+        - policy
+        - callback
+        - metadata
+        - status
+        - completed_at
+        - document
+        - data
+        - validation
+        - processing
+        additionalProperties: true
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentId'
+          object:
+            type: string
+            const: document
+          document_type:
+            type: string
+            const: invoice
+          schema_version:
+            type: string
+            const: invoice.v1
+          created_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          external_id:
+            anyOf:
+            - $ref: '#/components/schemas/ExternalId'
+            - type: 'null'
+          accounting_entity_id:
+            anyOf:
+            - $ref: '#/components/schemas/AccountingEntityId'
+            - type: 'null'
+          policy:
+            $ref: '#/components/schemas/DocumentPolicy'
+          callback:
+            anyOf:
+            - $ref: '#/components/schemas/CallbackDeliverySummary'
+            - type: 'null'
+          metadata:
+            $ref: '#/components/schemas/CustomerMetadata'
+          status:
+            type: string
+            const: needs_review
+          completed_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          document:
+            $ref: '#/components/schemas/ResultDocumentDescriptor'
+          data:
+            $ref: '#/components/schemas/InvoiceDataV1'
+          validation:
+            $ref: '#/components/schemas/Validation'
+          processing:
+            $ref: '#/components/schemas/ProcessingMetadata'
+        required:
+        - id
+        - object
+        - document_type
+        - schema_version
+        - created_at
+        - external_id
+        - accounting_entity_id
+        - policy
+        - callback
+        - metadata
+        - status
+        - completed_at
+        - document
+        - data
+        - validation
+        - processing
+        additionalProperties: true
+      - type: object
+        properties:
+          id:
+            $ref: '#/components/schemas/DocumentId'
+          object:
+            type: string
+            const: document
+          document_type:
+            type: string
+            const: invoice
+          schema_version:
+            type: string
+            const: invoice.v1
+          created_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          external_id:
+            anyOf:
+            - $ref: '#/components/schemas/ExternalId'
+            - type: 'null'
+          accounting_entity_id:
+            anyOf:
+            - $ref: '#/components/schemas/AccountingEntityId'
+            - type: 'null'
+          policy:
+            $ref: '#/components/schemas/DocumentPolicy'
+          callback:
+            anyOf:
+            - $ref: '#/components/schemas/CallbackDeliverySummary'
+            - type: 'null'
+          metadata:
+            $ref: '#/components/schemas/CustomerMetadata'
+          status:
+            type: string
+            const: failed
+          completed_at:
+            $ref: '#/components/schemas/UtcDateTime'
+          document:
+            $ref: '#/components/schemas/FailedDocumentDescriptor'
+          error:
+            $ref: '#/components/schemas/AsyncDocumentError'
+        required:
+        - id
+        - object
+        - document_type
+        - schema_version
+        - created_at
+        - external_id
+        - accounting_entity_id
+        - policy
+        - callback
+        - metadata
+        - status
+        - completed_at
+        - document
+        - error
+        additionalProperties: true
+    CountryCode:
+      type: string
+      pattern: ^[A-Z]{2}$
+    UploadAuthorization:
+      type: object
+      properties:
+        method:
+          type: string
+          const: PUT
+        url:
+          $ref: '#/components/schemas/HttpsUrl'
+        headers:
+          type: object
+          propertyNames:
+            type: string
+          additionalProperties:
+            type: string
+        expires_at:
+          $ref: '#/components/schemas/UtcDateTime'
+      required:
+      - method
+      - url
+      - headers
+      - expires_at
+      additionalProperties: true
+    ApiErrorBody:
+      type: object
+      properties:
+        type:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1
+        request_id:
+          $ref: '#/components/schemas/RequestId'
+        retryable:
+          type: boolean
+        details:
+          $ref: '#/components/schemas/JsonValue'
+      required:
+      - type
+      - code
+      - message
+      - request_id
+      - retryable
+      additionalProperties: true
+    UploadCompleteAcceptedResponse:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/DocumentId'
+        object:
+          type: string
+          const: document
+        document_type:
+          type: string
+          const: invoice
+        schema_version:
+          type: string
+          const: invoice.v1
+        created_at:
+          $ref: '#/components/schemas/UtcDateTime'
+        external_id:
+          anyOf:
+          - $ref: '#/components/schemas/ExternalId'
+          - type: 'null'
+        accounting_entity_id:
+          anyOf:
+          - $ref: '#/components/schemas/AccountingEntityId'
+          - type: 'null'
+        policy:
+          $ref: '#/components/schemas/DocumentPolicy'
+        callback:
+          anyOf:
+          - $ref: '#/components/schemas/CallbackDeliverySummary'
+          - type: 'null'
+        metadata:
+          $ref: '#/components/schemas/CustomerMetadata'
+        status:
+          type: string
+          const: queued
+      required:
+      - id
+      - object
+      - document_type
+      - schema_version
+      - created_at
+      - external_id
+      - accounting_entity_id
+      - policy
+      - callback
+      - metadata
+      - status
+      additionalProperties: true
+    SourceContentType:
       type: string
       enum:
-      - advisory
-      - review_on_failure
-      - required
+      - application/pdf
+      - image/jpeg
+      - image/png
+    ValidationCheck:
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum:
+          - pass
+          - fail
+          - not_evaluable
+        severity:
+          type: string
+          enum:
+          - info
+          - warning
+          - review
+        message:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        paths:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoicePath'
+        details:
+          anyOf:
+          - $ref: '#/components/schemas/JsonValue'
+          - type: 'null'
+      required:
+      - code
+      - status
+      - severity
+      - message
+      - paths
+      additionalProperties: true
+    __schema0:
+      anyOf:
+      - type: string
+      - type: number
+      - type: boolean
+      - type: 'null'
+      - type: array
+        items:
+          $ref: '#/components/schemas/__schema0'
+      - type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          $ref: '#/components/schemas/__schema0'
+    IdempotencyKey:
+      type: string
+      pattern: ^[\x21-\x2B\x2D-\x7E]+$
+      minLength: 1
+      maxLength: 255
+    DocumentId:
+      type: string
+      pattern: ^doc_.+$
+    InvoiceDate:
+      type: string
+      format: date
+      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
     DocumentResponse:
       oneOf:
       - type: object
@@ -1768,376 +2254,74 @@ components:
         - error
         additionalProperties: true
       type: object
-    SourceContentType:
-      type: string
-      enum:
-      - application/pdf
-      - image/jpeg
-      - image/png
-    ApiError:
+    DocumentPolicy:
       type: object
       properties:
-        error:
-          $ref: '#/components/schemas/ApiErrorBody'
-      required:
-      - error
-      additionalProperties: true
-    NonNegativeMoney:
-      type: object
-      properties:
-        amount:
-          $ref: '#/components/schemas/NonNegativeDecimalString'
-        currency:
-          $ref: '#/components/schemas/CurrencyCode'
-      required:
-      - amount
-      - currency
-      additionalProperties: false
-    InvoiceDate:
-      type: string
-      format: date
-      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
-    UploadCompleteAcceptedResponse:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/DocumentId'
-        object:
-          type: string
-          const: document
-        document_type:
-          type: string
-          const: invoice
-        schema_version:
-          type: string
-          const: invoice.v1
-        created_at:
-          $ref: '#/components/schemas/UtcDateTime'
-        external_id:
-          anyOf:
-          - $ref: '#/components/schemas/ExternalId'
-          - type: 'null'
-        accounting_entity_id:
-          anyOf:
-          - $ref: '#/components/schemas/AccountingEntityId'
-          - type: 'null'
-        policy:
-          $ref: '#/components/schemas/DocumentPolicy'
-        callback:
-          anyOf:
-          - $ref: '#/components/schemas/CallbackDeliverySummary'
-          - type: 'null'
-        metadata:
-          $ref: '#/components/schemas/CustomerMetadata'
-        status:
-          type: string
-          const: queued
-      required:
-      - id
-      - object
-      - document_type
-      - schema_version
-      - created_at
-      - external_id
-      - accounting_entity_id
-      - policy
-      - callback
-      - metadata
-      - status
-      additionalProperties: true
-    ExternalId:
-      type: string
-      description: Opaque external ID with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
-      minLength: 1
-      maxLength: 255
-    InvoiceDataV1:
-      type: object
-      properties:
-        vendor:
-          $ref: '#/components/schemas/InvoiceParty'
-        customer:
-          $ref: '#/components/schemas/InvoiceParty'
-        invoice:
-          $ref: '#/components/schemas/InvoiceHeader'
+        required_fields:
+          maxItems: 17
+          type: array
+          items:
+            $ref: '#/components/schemas/RequiredFieldPath'
+          uniqueItems: true
         line_items:
-          maxItems: 500
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItem'
-        line_items_status:
-          $ref: '#/components/schemas/LineItemsStatus'
-        totals:
-          $ref: '#/components/schemas/InvoiceTotals'
-        taxes:
-          type: array
-          items:
-            $ref: '#/components/schemas/TaxComponent'
-      required:
-      - vendor
-      - customer
-      - invoice
-      - line_items
-      - line_items_status
-      - totals
-      - taxes
-      additionalProperties: false
-      if:
-        properties:
-          line_items_status:
-            const: unavailable
-        required:
-        - line_items_status
-      then:
-        properties:
-          line_items:
-            type: array
-            maxItems: 0
-    TaxComponent:
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - sales_tax
-          - vat
-          - gst
-          - other
-          - unknown
-        label:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        rate:
-          anyOf:
-          - $ref: '#/components/schemas/NonNegativeDecimalString'
-          - type: 'null'
-        taxable_amount:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        amount:
-          anyOf:
-          - $ref: '#/components/schemas/Money'
-          - type: 'null'
-        jurisdiction:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-      required:
-      - type
-      - label
-      - rate
-      - taxable_amount
-      - amount
-      - jurisdiction
-      additionalProperties: false
-    InvoiceHeader:
-      type: object
-      properties:
-        number:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        issue_date:
-          anyOf:
-          - $ref: '#/components/schemas/InvoiceDate'
-          - type: 'null'
-        due_date:
-          anyOf:
-          - $ref: '#/components/schemas/InvoiceDate'
-          - type: 'null'
-        purchase_order_number:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        currency:
-          anyOf:
-          - $ref: '#/components/schemas/CurrencyCode'
-          - type: 'null'
-        payment_terms:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-      required:
-      - number
-      - issue_date
-      - due_date
-      - purchase_order_number
-      - currency
-      - payment_terms
-      additionalProperties: false
-    CallbackDeliverySummary:
-      type: object
-      properties:
-        event_id:
-          anyOf:
-          - type: string
-            pattern: ^evt_.+
-          - type: 'null'
-        status:
-          type: string
-          enum:
-          - pending
-          - delivered
-          - failed
-        attempt_count:
-          type: integer
-          minimum: 0
-          maximum: 9007199254740991
-        last_attempt_at:
-          anyOf:
-          - $ref: '#/components/schemas/UtcDateTime'
-          - type: 'null'
-        next_attempt_at:
-          anyOf:
-          - $ref: '#/components/schemas/UtcDateTime'
-          - type: 'null'
-        last_http_status:
-          anyOf:
-          - type: integer
-            minimum: 100
-            maximum: 599
-          - type: 'null'
-        last_error_code:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        delivered_at:
-          anyOf:
-          - $ref: '#/components/schemas/UtcDateTime'
-          - type: 'null'
-      required:
-      - event_id
-      - status
-      - attempt_count
-      - last_attempt_at
-      - next_attempt_at
-      - last_http_status
-      - last_error_code
-      - delivered_at
-      additionalProperties: true
-    FailedDocumentDescriptor:
-      type: object
-      properties:
-        filename:
-          $ref: '#/components/schemas/Filename'
-        content_type:
-          $ref: '#/components/schemas/SourceContentType'
-        page_count:
-          anyOf:
-          - type: integer
-            exclusiveMinimum: 0
-            maximum: 9007199254740991
-          - type: 'null'
-      required:
-      - filename
-      - content_type
-      - page_count
-      additionalProperties: true
-    ValidationCheck:
-      type: object
-      properties:
-        code:
-          type: string
-          minLength: 1
-        status:
-          type: string
-          enum:
-          - pass
-          - fail
-          - not_evaluable
-        severity:
-          type: string
-          enum:
-          - info
-          - warning
-          - review
-        message:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        paths:
-          type: array
-          items:
-            $ref: '#/components/schemas/InvoicePath'
-        details:
-          anyOf:
-          - $ref: '#/components/schemas/JsonValue'
-          - type: 'null'
-      required:
-      - code
-      - status
-      - severity
-      - message
-      - paths
-      additionalProperties: true
-    UploadAuthorization:
-      type: object
-      properties:
-        method:
-          type: string
-          const: PUT
-        url:
-          $ref: '#/components/schemas/HttpsUrl'
-        headers:
+          $ref: '#/components/schemas/LineItemsPolicy'
+        checks:
           type: object
-          propertyNames:
-            type: string
-          additionalProperties:
-            type: string
-        expires_at:
-          $ref: '#/components/schemas/UtcDateTime'
+          properties:
+            duplicate_detection:
+              type: boolean
+          required:
+          - duplicate_detection
+          additionalProperties: false
       required:
-      - method
-      - url
-      - headers
-      - expires_at
-      additionalProperties: true
-    DocumentId:
+      - required_fields
+      - line_items
+      - checks
+      additionalProperties: false
+    UtcDateTime:
       type: string
-      pattern: ^doc_.+$
-    SignedDecimalString:
-      type: string
-      pattern: ^[+-]?\d+(?:\.\d+)?$
-    RequiredFieldPath:
-      type: string
-      enum:
-      - /data/customer/name
-      - /data/customer/tax_id
-      - /data/invoice/currency
-      - /data/invoice/due_date
-      - /data/invoice/issue_date
-      - /data/invoice/number
-      - /data/invoice/payment_terms
-      - /data/invoice/purchase_order_number
-      - /data/totals/amount_due
-      - /data/totals/discount
-      - /data/totals/other_charges
-      - /data/totals/shipping
-      - /data/totals/subtotal
-      - /data/totals/tax
-      - /data/totals/total
-      - /data/vendor/name
-      - /data/vendor/tax_id
-    IdempotencyKey:
-      type: string
-      pattern: ^[\x21-\x2B\x2D-\x7E]+$
-      minLength: 1
-      maxLength: 255
-    LineItemsStatus:
-      type: string
-      enum:
-      - complete
-      - partial
-      - unavailable
-      description: AI assessment of line-item extraction. Complete is not independent proof that every source item was captured.
+      format: date-time
+      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+    InvoiceTotals:
+      type: object
+      properties:
+        subtotal:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        discount:
+          anyOf:
+          - $ref: '#/components/schemas/NonNegativeMoney'
+          - type: 'null'
+        shipping:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        other_charges:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        tax:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        total:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        amount_due:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+      required:
+      - subtotal
+      - discount
+      - shipping
+      - other_charges
+      - tax
+      - total
+      - amount_due
+      additionalProperties: false
     Money:
       type: object
       properties:
@@ -2149,113 +2333,42 @@ components:
       - amount
       - currency
       additionalProperties: false
-    AsyncDocumentError:
+    InvoiceParty:
       type: object
       properties:
-        code:
-          type: string
-          minLength: 1
-        message:
-          type: string
-          minLength: 1
-        retryable:
-          type: boolean
-      required:
-      - code
-      - message
-      - retryable
-      additionalProperties: true
-    Address:
-      type: object
-      properties:
-        line1:
+        name:
           anyOf:
           - type: string
             minLength: 1
           - type: 'null'
-        line2:
+        tax_id:
           anyOf:
           - type: string
             minLength: 1
           - type: 'null'
-        city:
+        address:
           anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        region:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        postal_code:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        country_code:
-          anyOf:
-          - $ref: '#/components/schemas/CountryCode'
+          - $ref: '#/components/schemas/Address'
           - type: 'null'
       required:
-      - line1
-      - line2
-      - city
-      - region
-      - postal_code
-      - country_code
+      - name
+      - tax_id
+      - address
       additionalProperties: false
-    CreateDocumentResponse:
+    ApiError:
       type: object
       properties:
-        id:
-          $ref: '#/components/schemas/DocumentId'
-        object:
-          type: string
-          const: document
-        status:
-          type: string
-          const: awaiting_upload
-        document_type:
-          type: string
-          const: invoice
-        schema_version:
-          type: string
-          const: invoice.v1
-        created_at:
-          $ref: '#/components/schemas/UtcDateTime'
-        external_id:
-          anyOf:
-          - $ref: '#/components/schemas/ExternalId'
-          - type: 'null'
-        accounting_entity_id:
-          anyOf:
-          - $ref: '#/components/schemas/AccountingEntityId'
-          - type: 'null'
-        policy:
-          $ref: '#/components/schemas/DocumentPolicy'
-        upload:
-          $ref: '#/components/schemas/UploadAuthorization'
-        callback:
-          anyOf:
-          - $ref: '#/components/schemas/CallbackDeliverySummary'
-          - type: 'null'
-        metadata:
-          $ref: '#/components/schemas/CustomerMetadata'
+        error:
+          $ref: '#/components/schemas/ApiErrorBody'
       required:
-      - id
-      - object
-      - status
-      - document_type
-      - schema_version
-      - created_at
-      - external_id
-      - accounting_entity_id
-      - policy
-      - upload
-      - callback
-      - metadata
+      - error
       additionalProperties: true
+    LineItemsPolicy:
+      type: string
+      enum:
+      - advisory
+      - review_on_failure
+      - required
     LineItem:
       type: object
       properties:
@@ -2304,373 +2417,260 @@ components:
       - tax
       - line_total
       additionalProperties: false
-    DocumentPolicy:
+    JsonValue:
+      $ref: '#/components/schemas/__schema0'
+    InvoicePath:
+      type: string
+      pattern: ^\/data\/.+
+    CallbackUrl:
+      type: string
+      description: HTTPS callback URL using a DNS hostname and port 443, with 1..2048 Unicode code points, no fragment, no surrounding whitespace, no embedded credentials, and no Cc/U+2028/U+2029 control characters
+      minLength: 1
+      maxLength: 2048
+      format: uri
+      pattern: ^[Hh][Tt][Tt][Pp][Ss]://
+    ProcessingMetadata:
+      type: object
+      properties:
+        pipeline_version:
+          type: string
+          minLength: 1
+        duration_ms:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+        processed_pages:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 9007199254740991
+        result_expires_at:
+          $ref: '#/components/schemas/UtcDateTime'
+      required:
+      - pipeline_version
+      - duration_ms
+      - processed_pages
+      - result_expires_at
+      additionalProperties: true
+    HttpsUrl:
+      type: string
+      format: uri
+      pattern: ^https:\/\/.*
+      description: Public HTTPS URL without embedded username or password credentials
+    LineItemsStatus:
+      type: string
+      enum:
+      - complete
+      - partial
+      - unavailable
+      description: AI assessment of line-item extraction. Complete is not independent proof that every source item was captured.
+    Filename:
+      type: string
+      description: Filename with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
+      minLength: 1
+      maxLength: 255
+    RequestId:
+      type: string
+      pattern: ^req_.+$
+    UploadCompleteRequest:
+      type: object
+      properties: {}
+      additionalProperties: false
+    Validation:
+      type: object
+      properties:
+        review_required:
+          type: boolean
+        checks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationCheck'
+      required:
+      - review_required
+      - checks
+      additionalProperties: true
+    SignedDecimalString:
+      type: string
+      pattern: ^[+-]?\d+(?:\.\d+)?$
+    ExternalId:
+      type: string
+      description: Opaque external ID with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
+      minLength: 1
+      maxLength: 255
+    TaxComponent:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - sales_tax
+          - vat
+          - gst
+          - other
+          - unknown
+        label:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+        rate:
+          anyOf:
+          - $ref: '#/components/schemas/NonNegativeDecimalString'
+          - type: 'null'
+        taxable_amount:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        amount:
+          anyOf:
+          - $ref: '#/components/schemas/Money'
+          - type: 'null'
+        jurisdiction:
+          anyOf:
+          - type: string
+            minLength: 1
+          - type: 'null'
+      required:
+      - type
+      - label
+      - rate
+      - taxable_amount
+      - amount
+      - jurisdiction
+      additionalProperties: false
+    CreateDocumentRequest:
+      type: object
+      properties:
+        filename:
+          $ref: '#/components/schemas/Filename'
+        content_type:
+          $ref: '#/components/schemas/SourceContentType'
+        file_size_bytes:
+          type: integer
+          exclusiveMinimum: 0
+          maximum: 20971520
+        external_id:
+          $ref: '#/components/schemas/ExternalId'
+        accounting_entity_id:
+          $ref: '#/components/schemas/AccountingEntityId'
+        policy:
+          $ref: '#/components/schemas/CreateDocumentPolicy'
+        callback_url:
+          $ref: '#/components/schemas/CallbackUrl'
+        metadata:
+          default: {}
+          $ref: '#/components/schemas/CustomerMetadata'
+      required:
+      - filename
+      - content_type
+      - file_size_bytes
+      additionalProperties: false
+    ResultDocumentDescriptor:
+      type: object
+      properties:
+        filename:
+          $ref: '#/components/schemas/Filename'
+        content_type:
+          $ref: '#/components/schemas/SourceContentType'
+        page_count:
+          type: integer
+          minimum: 1
+          maximum: 20
+      required:
+      - filename
+      - content_type
+      - page_count
+      additionalProperties: true
+    CreateDocumentPolicy:
+      default:
+        required_fields: []
+        line_items: advisory
+        checks:
+          duplicate_detection: true
       type: object
       properties:
         required_fields:
+          default: []
           maxItems: 17
           type: array
           items:
             $ref: '#/components/schemas/RequiredFieldPath'
           uniqueItems: true
         line_items:
+          default: advisory
           $ref: '#/components/schemas/LineItemsPolicy'
         checks:
+          default:
+            duplicate_detection: true
           type: object
           properties:
             duplicate_detection:
+              default: true
               type: boolean
-          required:
-          - duplicate_detection
           additionalProperties: false
-      required:
-      - required_fields
-      - line_items
-      - checks
       additionalProperties: false
-    Filename:
-      type: string
-      description: Filename with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
-      minLength: 1
-      maxLength: 255
-    InvoicePath:
-      type: string
-      pattern: ^\/data\/.+
     AccountingEntityId:
       type: string
       description: Opaque case-sensitive accounting entity namespace with 1..255 Unicode code points, no surrounding whitespace, and no Cc/U+2028/U+2029 control characters
       minLength: 1
       maxLength: 255
-    InvoiceParty:
+    CustomerMetadata:
+      type: object
+      propertyNames:
+        type: string
+        pattern: ^[A-Za-z0-9_.-]+$
+        description: Metadata key containing 1..64 ASCII letters, digits, _, ., or -
+        minLength: 1
+        maxLength: 64
+      additionalProperties:
+        type: string
+        description: Opaque string preserved exactly, limited to 500 Unicode code points and required to be single-line/control-free (no Cc/U+2028/U+2029)
+        maxLength: 500
+      maxProperties: 10
+    InvoiceDataV1:
       type: object
       properties:
-        name:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        tax_id:
-          anyOf:
-          - type: string
-            minLength: 1
-          - type: 'null'
-        address:
-          anyOf:
-          - $ref: '#/components/schemas/Address'
-          - type: 'null'
+        vendor:
+          $ref: '#/components/schemas/InvoiceParty'
+        customer:
+          $ref: '#/components/schemas/InvoiceParty'
+        invoice:
+          $ref: '#/components/schemas/InvoiceHeader'
+        line_items:
+          maxItems: 500
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItem'
+        line_items_status:
+          $ref: '#/components/schemas/LineItemsStatus'
+        totals:
+          $ref: '#/components/schemas/InvoiceTotals'
+        taxes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxComponent'
       required:
-      - name
-      - tax_id
-      - address
+      - vendor
+      - customer
+      - invoice
+      - line_items
+      - line_items_status
+      - totals
+      - taxes
       additionalProperties: false
-    UploadCompleteReplayResponse:
-      oneOf:
-      - type: object
+      if:
         properties:
-          id:
-            $ref: '#/components/schemas/DocumentId'
-          object:
-            type: string
-            const: document
-          document_type:
-            type: string
-            const: invoice
-          schema_version:
-            type: string
-            const: invoice.v1
-          created_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          external_id:
-            anyOf:
-            - $ref: '#/components/schemas/ExternalId'
-            - type: 'null'
-          accounting_entity_id:
-            anyOf:
-            - $ref: '#/components/schemas/AccountingEntityId'
-            - type: 'null'
-          policy:
-            $ref: '#/components/schemas/DocumentPolicy'
-          callback:
-            anyOf:
-            - $ref: '#/components/schemas/CallbackDeliverySummary'
-            - type: 'null'
-          metadata:
-            $ref: '#/components/schemas/CustomerMetadata'
-          status:
-            type: string
-            const: queued
+          line_items_status:
+            const: unavailable
         required:
-        - id
-        - object
-        - document_type
-        - schema_version
-        - created_at
-        - external_id
-        - accounting_entity_id
-        - policy
-        - callback
-        - metadata
-        - status
-        additionalProperties: true
-      - type: object
+        - line_items_status
+      then:
         properties:
-          id:
-            $ref: '#/components/schemas/DocumentId'
-          object:
-            type: string
-            const: document
-          document_type:
-            type: string
-            const: invoice
-          schema_version:
-            type: string
-            const: invoice.v1
-          created_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          external_id:
-            anyOf:
-            - $ref: '#/components/schemas/ExternalId'
-            - type: 'null'
-          accounting_entity_id:
-            anyOf:
-            - $ref: '#/components/schemas/AccountingEntityId'
-            - type: 'null'
-          policy:
-            $ref: '#/components/schemas/DocumentPolicy'
-          callback:
-            anyOf:
-            - $ref: '#/components/schemas/CallbackDeliverySummary'
-            - type: 'null'
-          metadata:
-            $ref: '#/components/schemas/CustomerMetadata'
-          status:
-            type: string
-            const: processing
-        required:
-        - id
-        - object
-        - document_type
-        - schema_version
-        - created_at
-        - external_id
-        - accounting_entity_id
-        - policy
-        - callback
-        - metadata
-        - status
-        additionalProperties: true
-      - type: object
-        properties:
-          id:
-            $ref: '#/components/schemas/DocumentId'
-          object:
-            type: string
-            const: document
-          document_type:
-            type: string
-            const: invoice
-          schema_version:
-            type: string
-            const: invoice.v1
-          created_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          external_id:
-            anyOf:
-            - $ref: '#/components/schemas/ExternalId'
-            - type: 'null'
-          accounting_entity_id:
-            anyOf:
-            - $ref: '#/components/schemas/AccountingEntityId'
-            - type: 'null'
-          policy:
-            $ref: '#/components/schemas/DocumentPolicy'
-          callback:
-            anyOf:
-            - $ref: '#/components/schemas/CallbackDeliverySummary'
-            - type: 'null'
-          metadata:
-            $ref: '#/components/schemas/CustomerMetadata'
-          status:
-            type: string
-            const: completed
-          completed_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          document:
-            $ref: '#/components/schemas/ResultDocumentDescriptor'
-          data:
-            $ref: '#/components/schemas/InvoiceDataV1'
-          validation:
-            $ref: '#/components/schemas/Validation'
-          processing:
-            $ref: '#/components/schemas/ProcessingMetadata'
-        required:
-        - id
-        - object
-        - document_type
-        - schema_version
-        - created_at
-        - external_id
-        - accounting_entity_id
-        - policy
-        - callback
-        - metadata
-        - status
-        - completed_at
-        - document
-        - data
-        - validation
-        - processing
-        additionalProperties: true
-      - type: object
-        properties:
-          id:
-            $ref: '#/components/schemas/DocumentId'
-          object:
-            type: string
-            const: document
-          document_type:
-            type: string
-            const: invoice
-          schema_version:
-            type: string
-            const: invoice.v1
-          created_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          external_id:
-            anyOf:
-            - $ref: '#/components/schemas/ExternalId'
-            - type: 'null'
-          accounting_entity_id:
-            anyOf:
-            - $ref: '#/components/schemas/AccountingEntityId'
-            - type: 'null'
-          policy:
-            $ref: '#/components/schemas/DocumentPolicy'
-          callback:
-            anyOf:
-            - $ref: '#/components/schemas/CallbackDeliverySummary'
-            - type: 'null'
-          metadata:
-            $ref: '#/components/schemas/CustomerMetadata'
-          status:
-            type: string
-            const: needs_review
-          completed_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          document:
-            $ref: '#/components/schemas/ResultDocumentDescriptor'
-          data:
-            $ref: '#/components/schemas/InvoiceDataV1'
-          validation:
-            $ref: '#/components/schemas/Validation'
-          processing:
-            $ref: '#/components/schemas/ProcessingMetadata'
-        required:
-        - id
-        - object
-        - document_type
-        - schema_version
-        - created_at
-        - external_id
-        - accounting_entity_id
-        - policy
-        - callback
-        - metadata
-        - status
-        - completed_at
-        - document
-        - data
-        - validation
-        - processing
-        additionalProperties: true
-      - type: object
-        properties:
-          id:
-            $ref: '#/components/schemas/DocumentId'
-          object:
-            type: string
-            const: document
-          document_type:
-            type: string
-            const: invoice
-          schema_version:
-            type: string
-            const: invoice.v1
-          created_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          external_id:
-            anyOf:
-            - $ref: '#/components/schemas/ExternalId'
-            - type: 'null'
-          accounting_entity_id:
-            anyOf:
-            - $ref: '#/components/schemas/AccountingEntityId'
-            - type: 'null'
-          policy:
-            $ref: '#/components/schemas/DocumentPolicy'
-          callback:
-            anyOf:
-            - $ref: '#/components/schemas/CallbackDeliverySummary'
-            - type: 'null'
-          metadata:
-            $ref: '#/components/schemas/CustomerMetadata'
-          status:
-            type: string
-            const: failed
-          completed_at:
-            $ref: '#/components/schemas/UtcDateTime'
-          document:
-            $ref: '#/components/schemas/FailedDocumentDescriptor'
-          error:
-            $ref: '#/components/schemas/AsyncDocumentError'
-        required:
-        - id
-        - object
-        - document_type
-        - schema_version
-        - created_at
-        - external_id
-        - accounting_entity_id
-        - policy
-        - callback
-        - metadata
-        - status
-        - completed_at
-        - document
-        - error
-        additionalProperties: true
-      type: object
-    UtcDateTime:
+          line_items:
+            type: array
+            maxItems: 0
+    NonNegativeDecimalString:
       type: string
-      format: date-time
-      pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
-    ApiErrorBody:
-      type: object
-      properties:
-        type:
-          type: string
-          minLength: 1
-        code:
-          type: string
-          minLength: 1
-        message:
-          type: string
-          minLength: 1
-        request_id:
-          $ref: '#/components/schemas/RequestId'
-        retryable:
-          type: boolean
-        details:
-          $ref: '#/components/schemas/JsonValue'
-      required:
-      - type
-      - code
-      - message
-      - request_id
-      - retryable
-      additionalProperties: true
-    JsonValue:
-      $ref: '#/components/schemas/__schema0'
+      pattern: ^\+?\d+(?:\.\d+)?$
   securitySchemes:
     ApiKeyAuth:
       type: http

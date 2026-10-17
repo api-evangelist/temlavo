@@ -20,7 +20,10 @@
     "temlavo-openapi.json: tagged paths GET /v1/usage -> Usage",
     "temlavo-openapi.json: declared missing tag: Documents",
     "temlavo-openapi.json: declared missing tag: Usage",
-    "apis.yml register: written (+2 apis, 2 total)"
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "temlavo-documents-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "temlavo-usage-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
